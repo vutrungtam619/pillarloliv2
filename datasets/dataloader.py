@@ -37,7 +37,7 @@ def collate_fn(list_data):
         batched_names=batched_names_list,
         batched_image_shape=batched_image_shape_list,
         batched_images=batched_images_list,
-        batched_calib=batched_calib_list,
+        batched_calibs=batched_calib_list,
         batched_idx=batched_idx_list
     )
 

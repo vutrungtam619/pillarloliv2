@@ -78,14 +78,14 @@ def main(args):
             batched_gt_bboxes = data_dict['batched_gt_bboxes']
             batched_labels = data_dict['batched_labels']
             batched_images = data_dict['batched_images']
-            batched_calibs = data_dict['batched_calib']
-            batched_image_shape = data_dict['batched_image_shape']
+            batched_calibs = data_dict['batched_calibs']
 
             # Forward (FP32 normal)
             bbox_cls_pred, bbox_pred, bbox_dir_cls_pred, anchor_target_dict = model(
                 batched_pts=batched_pts, mode='train',
                 batched_gt_bboxes=batched_gt_bboxes, 
                 batched_gt_labels=batched_labels,
+                batched_images=batched_images,
                 batched_calibs=batched_calibs
             )     
             
