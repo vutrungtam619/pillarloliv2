@@ -11,8 +11,8 @@ from utils import points_lidar2image, bounding_bboxes, Anchors, anchor_target, a
 class ImageStem(nn.Module):
     def __init__(self, mean, std, shape, out_channel):
         super(ImageStem, self).__init__()
-        self.mean = mean
-        self.std = std
+        self.mean = torch.tensor(mean, dtype=torch.float32)
+        self.std = torch.tensor(std, dtype=torch.float32)
         self.shape = shape
         self.stem = nn.Sequential(
             nn.Conv2d(3, out_channel, kernel_size=3, stride=2, padding=1, bias=False),
