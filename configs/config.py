@@ -12,6 +12,7 @@ config = {
     'num_blocks': 10,
     'mean': [0.36783523, 0.38706144, 0.3754649],
     'std': [0.31566228, 0.31997792, 0.32575161],
+    'shape': (1280, 720),
     'checkpoint_dir': Path(root) / 'checkpoints',
     'log_dir': Path(root) / 'logs',
     'batch_size_train': 8,
