@@ -242,7 +242,7 @@ class PillarEncoder(nn.Module):
             mask = batch_idx == b
             pts = boundary_points[mask.cpu().numpy()]  # lấy numpy array cho points_lidar2image
             calib = batch_calibs[b.item()]
-            img_pts = points_lidar2image(pts, transformation=calib['T'], rectification=calib['R'], projection=calib['P'])
+            img_pts = points_lidar2image(pts, tr_velo_to_cam=calib['T'], r0_rect=calib['R'], P2=calib['P'])
             points2image[mask] = torch.from_numpy(img_pts).to(device)
 
         image_bboxes = bounding_bboxes(points2image.cpu().numpy())
