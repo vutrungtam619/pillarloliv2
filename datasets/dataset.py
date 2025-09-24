@@ -6,7 +6,7 @@ from torch.utils.data import Dataset
 from utils import read_pickle, read_points, bbox_camera2lidar
 from datasets import train_data_aug, val_data_aug
 
-root = Path(__file__).parent
+root = Path(__file__).parent.parent
 
 class STKitti(Dataset): 
     def __init__(self, data_root, split):
