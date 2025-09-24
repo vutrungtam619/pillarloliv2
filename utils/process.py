@@ -715,9 +715,9 @@ def remove_outside_bboxes(annotation_dict, r0_rect, tr_velo_to_cam, P2, image_sh
     Returns:
         filtered_dimensions, filtered_location, filtered_rotation_y, filtered_name
     """
-    names = annotation_dict['name']
-    locs = annotation_dict['location']
-    dims = annotation_dict['dimension']
+    names = annotation_dict['names']
+    locs = annotation_dict['locations']
+    dims = annotation_dict['dimensions']
     rots = annotation_dict['rotation_y']
     
     bboxes_cam = np.concatenate([locs, dims, rots[:, None]], axis=1)
