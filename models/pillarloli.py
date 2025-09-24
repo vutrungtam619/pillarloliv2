@@ -9,35 +9,36 @@ from packages import Voxelization, nms_cuda
 from utils import points_lidar2image, bounding_bboxes, Anchors, anchor_target, anchors2bboxes, limit_period
 
 class ImageStem(nn.Module):
-    def __init__(self, mean, std, shape, out_channel):
+    def __init__(self, mean, std, shape, out_channel, device=None):
         super(ImageStem, self).__init__()
-        self.mean = torch.tensor(mean, dtype=torch.float32)
-        self.std = torch.tensor(std, dtype=torch.float32)
+        self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.mean = torch.tensor(mean, dtype=torch.float32, device=self.device)
+        self.std = torch.tensor(std, dtype=torch.float32, device=self.device)
         self.shape = shape
         self.stem = nn.Sequential(
             nn.Conv2d(3, out_channel, kernel_size=3, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(out_channel),
             nn.ReLU(inplace=True),
-            
+
             nn.Conv2d(out_channel, out_channel, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(out_channel),
             nn.ReLU(inplace=True),
-        )
-        
+        ).to(self.device)
+
     def image2tensor(self, batch_image):
         batch_tensor = []
         for image in batch_image:
-            image_tensor = torch.from_numpy(image).permute(2,0,1).to(dtype=torch.float32).div_(255.0)  # (C,H,W)
-            image_tensor = image_tensor.sub_(self.mean[:, None, None]).div_(self.std[:, None, None]).unsqueeze(0)
+            image_tensor = torch.from_numpy(image).permute(2,0,1).to(dtype=torch.float32, device=self.device) / 255.0  # (C,H,W)
+            image_tensor = (image_tensor - self.mean[:, None, None]) / self.std[:, None, None]
             if image.shape[:2] != self.shape:  # shape[:2] = H,W
-                image_tensor = F.interpolate(image_tensor, size=self.shape, mode='bilinear', align_corners=False)
-            batch_tensor.append(image_tensor.squeeze(0))
+                image_tensor = F.interpolate(image_tensor.unsqueeze(0), size=self.shape, mode='bilinear', align_corners=False).squeeze(0)
+            batch_tensor.append(image_tensor)
         batch_tensor = torch.stack(batch_tensor, dim=0)  # (B, C, H, W)
         return batch_tensor
-    
+
     def forward(self, batch_image):
         batch_tensor = self.image2tensor(batch_image)
-        stem = self.stem(batch_tensor) # (B, out_channels, H_img/2, W_img/2)  
+        stem = self.stem(batch_tensor)
         return stem
     
 class PillarLayer(nn.Module):
