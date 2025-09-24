@@ -15,7 +15,7 @@ config = {
     'shape': (1280, 720),
     'checkpoint_dir': Path(root) / 'checkpoints',
     'log_dir': Path(root) / 'logs',
-    'batch_size_train': 8,
+    'batch_size_train': 4,
     'batch_size_val': 4,
     'num_workers': 4,
     'init_lr': 0.00025,
