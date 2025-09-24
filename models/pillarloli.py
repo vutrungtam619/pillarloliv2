@@ -17,7 +17,7 @@ class ImageStem(nn.Module):
         self.shape = shape
         self.stem = nn.Sequential(
             nn.Conv2d(3, out_channel // 2, kernel_size=3, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(out_channel),
+            nn.BatchNorm2d(out_channel // 2),
             nn.ReLU(inplace=True),
 
             nn.Conv2d(out_channel // 2, out_channel, kernel_size=3, stride=1, padding=1, bias=False),
