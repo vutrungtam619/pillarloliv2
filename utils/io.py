@@ -36,24 +36,25 @@ def read_calib(file_path):
     }
     
 def read_label(file_path, suffix=".txt"):
-    """ Read label file, each line is one object in image
-    Args:
-        file_path [string]: path to label file (txt)
-    
-    Returns: Dict with following key, m is the number of objects in 1 sample
-        names [np.ndarray string, (m, )]: name of the object category in image, include Car, Pedestrian, Cyclist, DontCare
-        truncated [np.ndarray float32, (m, )]: how much the object extend outside the image, from 0.0 -> 1.0
-        occluded [np.ndarray float32, (m, )]: how much the objet is block by others, from 0 -> 3 (fully visible -> unknow)
-        alpha [np.ndarray float32, (m, )]: observation agle of the object in camera coordinate (radian)
-        bbox [np.ndarray float32, (m, 4)]: 2d bounding box in x_min, y_min, x_max, y_max
-        dimensions [np.ndarray float32, (m, 3)]: 3d dimension in legnth, height, width
-        locations [np.ndarray float32, (m, 3)]: 3d location of the object center in camera coordinate, bottom center
-        rotation_y [np.ndarray float32, (m, )]: rotation of the object around z-axis (from -pi -> pi)
-    """
+    """ Read label file, each line is one object in image """
     file_path = Path(file_path)
     if file_path.suffix != suffix:
         raise ValueError(f"File must be {suffix}, got {file_path.suffix}")
-    lines = [line.split() for line in file_path.read_text(encoding="utf-8").splitlines()]
+
+    text = file_path.read_text(encoding="utf-8").strip()
+    if not text:  # file rỗng
+        return {
+            "names": np.array([], dtype=str),
+            "truncated": np.array([], dtype=np.float32),
+            "occluded": np.array([], dtype=np.int32),
+            "alpha": np.array([], dtype=np.float32),
+            "bbox": np.zeros((0, 4), dtype=np.float32),
+            "dimensions": np.zeros((0, 3), dtype=np.float32),
+            "locations": np.zeros((0, 3), dtype=np.float32),
+            "rotation_y": np.array([], dtype=np.float32),
+        }
+
+    lines = [line.split() for line in text.splitlines()]
     return {
         "names": np.array([l[0] for l in lines]),
         "truncated": np.array([l[1] for l in lines], dtype=np.float32),
@@ -68,7 +69,9 @@ def read_label(file_path, suffix=".txt"):
 def write_label(file_path, result):
     file_path = Path(file_path)
     with file_path.open("w", encoding="utf-8") as f:
-        num_objects = len(result["name"])
+        num_objects = len(result["names"])
+        if num_objects == 0:
+            return  # file rỗng, không ghi gì
         for i in range(num_objects):
             line = (
                 f'{result["names"][i]} '
@@ -79,6 +82,6 @@ def write_label(file_path, result):
                 f'{" ".join(map(str, result["dimensions"][i]))} '
                 f'{" ".join(map(str, result["locations"][i]))} '
                 f'{result["rotation_y"][i]} '
-                f'{result["scores"][i]}\n'
+                f'{result.get("scores", ["-1"] * num_objects)[i]}\n'
             )
             f.write(line)
