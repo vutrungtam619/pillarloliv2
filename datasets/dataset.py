@@ -40,7 +40,7 @@ class STKitti(Dataset):
         idx = data_info['index']
         pts = read_points(lidar_info['lidar_path']).astype(np.float32)    
         
-        names = annos_info['name']
+        names = annos_info['names']
         locations = annos_info['locations']
         dimensions = annos_info['dimensions']
         rotation_y = annos_info['rotation_y']
