@@ -236,15 +236,16 @@ class PillarEncoder(nn.Module):
         # Image feature encoding
         boundary_points = self.extract_boundary_points(pillars, npoints_per_pillar) # (p1 + p2 + ... + pb, 4, 3) np array
 
-        points2image = torch.zeros((num_pillars, 4, 2), device=boundary_points.device)
+        points2image = torch.zeros((num_pillars, 4, 2), device=device)
         batch_idx = coors_batch[:, 0]
         for b in torch.unique(batch_idx):
             mask = batch_idx == b
-            pts = boundary_points[mask] 
-            calib = batch_calibs[b.item()]           
-            img_pts = points_lidar2image(pts, transformation=calib['T'], rectification=calib['R'], projection=calib['P'])           
-            points2image[mask] = torch.from_numpy(img_pts).to(boundary_points.device)
-        image_bboxes = bounding_bboxes(points2image) # (p1 + p2 + ... + pb, 4, 2) np array
+            pts = boundary_points[mask.cpu().numpy()]  # lấy numpy array cho points_lidar2image
+            calib = batch_calibs[b.item()]
+            img_pts = points_lidar2image(pts, transformation=calib['T'], rectification=calib['R'], projection=calib['P'])
+            points2image[mask] = torch.from_numpy(img_pts).to(device)
+
+        image_bboxes = bounding_bboxes(points2image.cpu().numpy())
         
         rois = self.bboxes_to_rois(image_bboxes, coors_batch, batch_image_map)
         roi_feats = torchvision.ops.roi_align(batch_image_map, rois, output_size=(3,3), spatial_scale=1, aligned=True)  # (p1 + p2 + ... + pb, out_channel, 3, 3)
