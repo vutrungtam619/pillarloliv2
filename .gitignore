@@ -3,5 +3,6 @@ __pycache__/
 build/
 images/
 *.egg-info/
+packages/*.pyd
 STKitti/
 STCrowd/
