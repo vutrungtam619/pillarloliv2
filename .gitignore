@@ -1,0 +1,7 @@
+__pycache__/
+.vscode/
+build/
+images/
+*.egg-info/
+STKitti/
+STCrowd/
