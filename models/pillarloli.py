@@ -194,10 +194,10 @@ class PillarEncoder(nn.Module):
         # Point feature encoding
         offset_pt_center = pillars[:, :, :3] - torch.sum(pillars[:, :, :3], dim=1, keepdim=True) / npoints_per_pillar[:, None, None] # (p1 + p2 + ... + pb, num_points, 3)
 
-        x_offset_pi_center = pillars[:, :, :1] - (coors_batch[:, None, 1:2] * self.vx + self.x_offset) # (p1 + p2 + ... + pb, num_points, 1)
+        x_offset_pi_center = pillars[:, :, 0:1] - (coors_batch[:, None, 1:2] * self.vx + self.x_offset) # (p1 + p2 + ... + pb, num_points, 1)
         y_offset_pi_center = pillars[:, :, 1:2] - (coors_batch[:, None, 2:3] * self.vy + self.y_offset) # (p1 + p2 + ... + pb, num_points, 1)
 
-        features = torch.cat([pillars[:, :, 2], offset_pt_center, x_offset_pi_center, y_offset_pi_center], dim=-1) # (p1 + p2 + ... + pb, num_points, 6) which x, y, intensity is remove
+        features = torch.cat([pillars[:, :, 2:3], offset_pt_center, x_offset_pi_center, y_offset_pi_center], dim=-1) # (p1 + p2 + ... + pb, num_points, 6) which x, y, intensity is remove
 
         # find mask for (0, 0, 0) and update the encoded features
         # a very beautiful implementation
