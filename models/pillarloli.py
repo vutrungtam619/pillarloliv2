@@ -106,7 +106,7 @@ class PillarEncoder(nn.Module):
             nn.ReLU(inplace=True)               
         )
 
-    def extract_boundary_points(pillars, npoints_per_pillars):
+    def extract_boundary_points(self, pillars, npoints_per_pillars):
         '''
         Args:
             pillars [torch.tensor float32, (p1 + p2 + ... + pb, N, c)]: c is number of features per point
@@ -141,7 +141,7 @@ class PillarEncoder(nn.Module):
         boundary_pts = torch.stack([z_min_pts, y_min_pts, z_max_pts, y_max_pts], dim=1)  # (p1 + p2 + ... + pb, 4, 3)
         return boundary_pts.cpu().numpy()
 
-    def bboxes_to_rois(image_bboxes, coors_batch, batch_image_map, img_shape=(1280, 720)):
+    def bboxes_to_rois(self, image_bboxes, coors_batch, batch_image_map, img_shape=(1280, 720)):
         '''
         '''
         device = batch_image_map.device
@@ -164,7 +164,7 @@ class PillarEncoder(nn.Module):
         rois = torch.tensor(rois, dtype=torch.float32, device=device)  # (p1 + p2 + ... + pb, 5)
         return rois
 
-    def scatter_features(features, coors_batch, bs, x_l, y_l, out_channel, device):
+    def scatter_features(self, features, coors_batch, bs, x_l, y_l, out_channel, device):
         batched_canvas = []
         for i in range(bs):
             cur_idx = coors_batch[:, 0] == i
