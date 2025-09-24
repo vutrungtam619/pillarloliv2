@@ -16,11 +16,11 @@ class ImageStem(nn.Module):
         self.std = torch.tensor(std, dtype=torch.float32, device=self.device)
         self.shape = shape
         self.stem = nn.Sequential(
-            nn.Conv2d(3, out_channel, kernel_size=3, stride=2, padding=1, bias=False),
+            nn.Conv2d(3, out_channel // 2, kernel_size=3, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(out_channel),
             nn.ReLU(inplace=True),
 
-            nn.Conv2d(out_channel, out_channel, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.Conv2d(out_channel // 2, out_channel, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(out_channel),
             nn.ReLU(inplace=True),
         ).to(self.device)
@@ -459,9 +459,9 @@ class Pillarloli(nn.Module):
         self.backbone = Backbone(
             in_channel=64,
             out_channels=[64, 128, 256],
-            layer_nums=[3, 3, 3],
+            layer_nums=[2, 2, 2],
             layer_strides=[1, 2, 2],
-            expand_ratio=3,
+            expand_ratio=2,
         )
         
         self.neck = Neck(
