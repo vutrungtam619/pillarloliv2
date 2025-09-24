@@ -219,8 +219,10 @@ class PillarEncoder(nn.Module):
             point_in_blocks = (pillars[:, :, 2] >= z_lower) & (pillars[:, :, 2] < z_upper) & mask
             num_pts_block = point_in_blocks.sum(dim=1).float() / npoints_per_pillar.float()           
             z_points = torch.where(point_in_blocks, pillars[:, :, 2], float('nan'))
-            z_max = torch.nanmax(z_points, dim=1)[0]
-            z_min = torch.nanmin(z_points, dim=1)[0]
+            z_points_masked = torch.where(torch.isnan(z_points), torch.full_like(z_points, -float('inf')), z_points)
+            z_max = torch.max(z_points_masked, dim=1)[0]
+            z_points_masked = torch.where(torch.isnan(z_points), torch.full_like(z_points, float('inf')), z_points)
+            z_min = torch.min(z_points_masked, dim=1)[0]
             delta_z = torch.where(torch.isnan(z_max - z_min), torch.zeros_like(z_max), z_max - z_min)         
             pillar_features.append(torch.stack([num_pts_block, delta_z], dim=1)) 
             
