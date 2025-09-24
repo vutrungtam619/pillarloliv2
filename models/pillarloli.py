@@ -27,13 +27,13 @@ class ImageStem(nn.Module):
     def image2tensor(self, batch_image):
         batch_tensor = []
         for image in batch_image:
-            image_tensor = torch.from_numpy(image).permute(2,0,1).to(dtype=torch.float32).div_(255.0) # (C, H_img, W_img)
-            image_tensor = image_tensor.sub_(self.mean).div_(self.std).unsqueeze(0)
-            if image.shape != self.shape:
+            image_tensor = torch.from_numpy(image).permute(2,0,1).to(dtype=torch.float32).div_(255.0)  # (C,H,W)
+            image_tensor = image_tensor.sub_(self.mean[:, None, None]).div_(self.std[:, None, None]).unsqueeze(0)
+            if image.shape[:2] != self.shape:  # shape[:2] = H,W
                 image_tensor = F.interpolate(image_tensor, size=self.shape, mode='bilinear', align_corners=False)
             batch_tensor.append(image_tensor.squeeze(0))
-        batch_tensor = torch.stack(batch_tensor, dim=0) # (B, C, H_img, W_img)  
-        return batch_tensor  
+        batch_tensor = torch.stack(batch_tensor, dim=0)  # (B, C, H, W)
+        return batch_tensor
     
     def forward(self, batch_image):
         batch_tensor = self.image2tensor(batch_image)
