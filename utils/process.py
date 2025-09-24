@@ -615,38 +615,38 @@ def keep_bbox_from_lidar_range(result, pcd_limit_range):
     return result
 
 
-def points_in_bboxes_v2(points, r0_rect, tr_velo_to_cam, dimensions, location, rotation_y, name):
+def points_in_bboxes_v2(points, r0_rect, tr_velo_to_cam, dimensions, locations, rotation_y, names):
     """ Check which LiDAR points fall inside each 3D bounding box.
     Args:
         points [np.ndarray float32, (N, 4)]: LiDAR points in homogeneous coordinates (x, y, z, reflectance).
         r0_rect [np.ndarray float32, (4, 4)]: rectification matrix aligning all cameras into a common reference frame.
         tr_velo_to_cam [np.ndarray float32, (4, 4)]: transformation matrix from LiDAR to camera coordinates.
         dimensions [np.ndarray float32, (m, 3)]: bounding box size (length, height, width) for m boxes.
-        location [np.ndarray float32, (m, 3)]: box center locations in camera coordinates.
+        locations [np.ndarray float32, (m, 3)]: box center locations in camera coordinates.
         rotation_y [np.ndarray float32, (m,)]: yaw angles (rotation around Y-axis) of bounding boxes.
-        name [np.ndarray object/string, (m,)]: class names or labels of bounding boxes.
+        names [np.ndarray object/string, (m,)]: class names or labels of bounding boxes.
         
     Returns:
         indices [np.ndarray bool, (N, m_valid)]: mask where indices[i, j] is True if point i is inside bounding box j.
         m_total [int]: total number of bounding boxes including 'DontCare'.
         m_valid [int]: number of valid bounding boxes excluding 'DontCare'.
         bboxes_lidar [np.ndarray float32, (m_valid, 7)]: valid bounding boxes in LiDAR coordinates, each as (x, y, z, dx, dy, dz, yaw).
-        name [np.ndarray object/string, (m_valid,)]: class names of valid bounding boxes.
+        names [np.ndarray object/string, (m_valid,)]: class names of valid bounding boxes.
     """
     n_total_bbox = len(dimensions)
-    n_valid_bbox = len([item for item in name if item != 'DontCare'])
-    location, dimensions = location[:n_valid_bbox], dimensions[:n_valid_bbox]
-    rotation_y, name = rotation_y[:n_valid_bbox], name[:n_valid_bbox]
-    bboxes_camera = np.concatenate([location, dimensions, rotation_y[:, None]], axis=1)
+    n_valid_bbox = len([item for item in names if item != 'DontCare'])
+    locations, dimensions = locations[:n_valid_bbox], dimensions[:n_valid_bbox]
+    rotation_y, names = rotation_y[:n_valid_bbox], names[:n_valid_bbox]
+    bboxes_camera = np.concatenate([locations, dimensions, rotation_y[:, None]], axis=1)
     bboxes_lidar = bbox_camera2lidar(bboxes_camera, tr_velo_to_cam, r0_rect)
     bboxes_corners = bbox3d2corners(bboxes_lidar)
     group_rectangle_vertexs_v = group_rectangle_vertexs(bboxes_corners)
     frustum_surfaces = group_plane_equation(group_rectangle_vertexs_v)
     indices = points_in_bboxes(points[:, :3], frustum_surfaces) # (N, n), N is points num, n is bboxes number
-    return indices, n_total_bbox, n_valid_bbox, bboxes_lidar, name
+    return indices, n_total_bbox, n_valid_bbox, bboxes_lidar, names
 
 
-def get_points_num_in_bbox(points, r0_rect, tr_velo_to_cam, dimensions, location, rotation_y, name):
+def get_points_num_in_bbox(points, r0_rect, tr_velo_to_cam, dimensions, locations, rotation_y, names):
     """ Count how many LiDAR points fall inside each 3D bounding box.
     Args:
         points [np.ndarray float32, (N, 4)]: LiDAR points in homogeneous coordinates (x, y, z, reflectance).
@@ -660,15 +660,15 @@ def get_points_num_in_bbox(points, r0_rect, tr_velo_to_cam, dimensions, location
     Returns:
         points_num [np.ndarray int32, (m, )]: number of LiDAR points inside each bounding box. For invalid bboxes (e.g., 'DontCare'), returns -1.
     """
-    indices, n_total_bbox, n_valid_bbox, bboxes_lidar, name = \
+    indices, n_total_bbox, n_valid_bbox, bboxes_lidar, names = \
         points_in_bboxes_v2(
             points=points, 
             r0_rect=r0_rect, 
             tr_velo_to_cam=tr_velo_to_cam, 
             dimensions=dimensions, 
-            location=location, 
+            locations=locations, 
             rotation_y=rotation_y, 
-            name=name)
+            names=names)
     points_num = np.sum(indices, axis=0)
     non_valid_points_num = [-1] * (n_total_bbox - n_valid_bbox)
     points_num = np.concatenate([points_num, non_valid_points_num], axis=0)

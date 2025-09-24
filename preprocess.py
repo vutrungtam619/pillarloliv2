@@ -70,7 +70,7 @@ def process_one_idx(idx, data_root, split, label, lidar_reduced_folder):
             tr_velo_to_cam=calib_dict['T'],
             dimensions=annotation_dict['dimensions']  ,
             locations=annotation_dict['locations']    ,
-            rotation_y=annotation_dict['rot_z'],
+            rotation_y=annotation_dict['rotation_y'],
             names=annotation_dict['names']  
         ) 
         cur_info_dict['annos'] = annotation_dict
